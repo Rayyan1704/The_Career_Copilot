@@ -163,6 +163,13 @@ The project uses Tailwind CSS v4 with modern directives like `@theme`, `@custom-
 npm run build
 npm start
 ```
+## AI-Assisted Development
+
+This project was ideated and implemented with the assistance of AI development tools, including Kiro and Gemini, to accelerate coding and debugging.  
+While AI helped generate parts of the code and boilerplate, all design decisions, integrations, testing, and final refinements were directed and validated by me.
+
+This reflects my ability to leverage AI productively in modern software development workflows — a key skill for the future of AI engineering.
+
 
 ## License
 
