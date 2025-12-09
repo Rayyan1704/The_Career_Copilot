@@ -14,7 +14,7 @@ A modern, AI-powered career toolkit built with Next.js and Tailwind CSS. This ap
 
 ## Tech Stack
 
-- **Framework**: Next.js 14+ with App Router
+- **Framework**: Next.js 16 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with tailwindcss-animate and @tailwindcss/typography
 - **UI Components**: shadcn/ui components
@@ -163,6 +163,38 @@ The project uses Tailwind CSS v4 with modern directives like `@theme`, `@custom-
 npm run build
 npm start
 ```
+
+## Deployment
+
+### Deploy to Vercel
+
+This project is optimized for deployment on Vercel:
+
+1. **Push your code to a Git repository** (GitHub, GitLab, or Bitbucket)
+
+2. **Import to Vercel**:
+   - Go to [vercel.com](https://vercel.com)
+   - Click "New Project"
+   - Import your repository
+
+3. **Configure Environment Variables**:
+   - Add `GOOGLE_GENAI_API_KEY` with your Google AI API key
+   - Apply to: Production, Preview, and Development environments
+
+4. **Deploy**:
+   - Vercel will automatically build and deploy your project
+   - Your app will be live at `your-project.vercel.app`
+
+### Environment Variables for Production
+
+Make sure to set these in your deployment platform:
+
+```bash
+GOOGLE_GENAI_API_KEY=your_google_ai_api_key_here
+```
+
+**Important**: Never commit your `.env.local` file to Git. It's already included in `.gitignore` for security.
+
 ## AI-Assisted Development
 
 This project was ideated and implemented with the assistance of AI development tools, including Kiro and Gemini, to accelerate coding and debugging.  

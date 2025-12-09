@@ -20,27 +20,50 @@ export default function CoverLetterPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
-    if (!resumeFile || !jobDescFile || !applicantName.trim()) return;
+    console.log('[cover-letter] handleGenerate invoked', { resumeFile, jobDescFile, applicantName });
+
+    if (!resumeFile || !jobDescFile || !applicantName.trim()) {
+      console.log('[cover-letter] validation failed - missing inputs');
+      setError('Please upload both resume and job description, and enter your name');
+      return;
+    }
 
     setIsGenerating(true);
     setError(null);
     setCoverLetter(null);
 
     try {
+      console.log('[cover-letter] extracting text from files...');
       const [resumeText, jobDescText] = await Promise.all([
         extractTextFromFile(resumeFile),
         extractTextFromFile(jobDescFile)
       ]);
+      console.log('[cover-letter] extracted texts', { 
+        resumeTextLength: resumeText.length, 
+        jobDescTextLength: jobDescText.length 
+      });
+
+      if (!resumeText || !jobDescText) {
+        throw new Error('Failed to extract text from uploaded files');
+      }
       
+      console.log('[cover-letter] calling generateCoverLetter...');
       const response = await generateCoverLetter(resumeText, jobDescText, applicantName.trim());
+      console.log('[cover-letter] response received', { success: response.success });
       
       if (response.success && response.data) {
+        console.log('[cover-letter] cover letter generated successfully');
         setCoverLetter(response.data.coverLetter);
+        setError(null);
       } else {
+        console.error('[cover-letter] generation failed', response.error);
         setError(response.error || 'Failed to generate cover letter');
+        setCoverLetter(null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('[cover-letter] generation error', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while generating the cover letter');
+      setCoverLetter(null);
     } finally {
       setIsGenerating(false);
     }
@@ -163,11 +186,17 @@ export default function CoverLetterPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Textarea
-                      value={coverLetter}
-                      readOnly
-                      className="min-h-[400px] font-mono text-sm"
-                    />
+                    {error ? (
+                      <div className="p-4 border border-destructive/20 rounded-md bg-destructive/10">
+                        <p className="text-destructive text-sm">{error}</p>
+                      </div>
+                    ) : (
+                      <Textarea
+                        value={coverLetter || ''}
+                        readOnly
+                        className="min-h-[400px] font-mono text-sm"
+                      />
+                    )}
                   </CardContent>
                 </Card>
               </div>

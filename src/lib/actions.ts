@@ -34,6 +34,12 @@ export async function matchResumeToJobDescription(resumeText: string, jobDescrip
 
 export async function generateCoverLetter(resumeText: string, jobDescriptionText: string, applicantName: string) {
   try {
+    console.log('[actions] generateCoverLetter called', {
+      resumeTextLength: resumeText?.length,
+      jobDescriptionTextLength: jobDescriptionText?.length,
+      applicantName
+    });
+
     const result = await generateCoverLetterFlow({ resumeText, jobDescriptionText, applicantName });
     return { success: true, data: result };
   } catch (error) {

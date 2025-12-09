@@ -6,17 +6,25 @@ if (typeof window === 'undefined') {
   require('dotenv').config({ path: '.env.local' });
 }
 
+const apiKey = process.env.GOOGLE_GENAI_API_KEY;
+
+if (!apiKey && typeof window === 'undefined') {
+  console.error('GOOGLE_GENAI_API_KEY is not set in environment variables');
+}
+
 export const ai = genkit({
   plugins: [
     googleAI({
-      apiKey: process.env.GOOGLE_GENAI_API_KEY,
+      apiKey: apiKey,
     }),
   ],
-  model: 'googleai/gemini-2.5-flash', // This model works with your API key!
+  model: 'googleai/gemini-2.5-flash', // Latest stable model with good free tier limits
 });
 
 export const model = 'googleai/gemini-2.5-flash';
 
 // Debug log to check if API key is loaded
-console.log("API key loaded:", !!process.env.GOOGLE_GENAI_API_KEY);
-console.log("Model configured:", 'googleai/gemini-2.5-flash');
+if (typeof window === 'undefined') {
+  console.log("API key loaded:", !!apiKey);
+  console.log("Model configured:", model);
+}

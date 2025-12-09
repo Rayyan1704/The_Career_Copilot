@@ -2,9 +2,13 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+function Input({ className, type = "text", ...props }: React.ComponentProps<"input">) {
+  // suppressHydrationWarning prevents noisy hydration mismatch warnings
+  // caused by browser extensions (e.g. attributes injected into <input>)
   return (
     <input
+      // suppress warning when external agents mutate the DOM before React hydrates
+      suppressHydrationWarning
       type={type}
       data-slot="input"
       className={cn(

@@ -1,9 +1,5 @@
-import { ai } from '../genkit';
+import { ai, model } from '../genkit';
 import { z } from 'zod';
-import crypto from 'crypto';
-
-// Simple in-memory cache for consistency
-const coverLetterCache = new Map<string, any>();
 
 const GenerateCoverLetterInputSchema = z.object({
   resumeText: z.string(),
@@ -22,20 +18,13 @@ export const generateCoverLetterFlow = ai.defineFlow(
     outputSchema: GenerateCoverLetterOutputSchema,
   },
   async (input) => {
-    // Create a consistent hash of the input
-    const inputKey = crypto.createHash('md5').update(input.resumeText + '|||' + input.jobDescriptionText + '|||' + input.applicantName).digest('hex');
+    console.log('[generateCoverLetterFlow] Starting generation', {
+      resumeLength: input.resumeText.length,
+      jobDescLength: input.jobDescriptionText.length,
+      applicantName: input.applicantName
+    });
     
-    // Check cache first for consistency
-    if (coverLetterCache.has(inputKey)) {
-      return coverLetterCache.get(inputKey);
-    }
-    
-    const inputHash = inputKey.slice(0, 16);
-    
-    const prompt = `
-You are a professional career counselor and expert writer. Create a personalized, compelling cover letter based on the provided resume and job description.
-
-Generation ID: ${inputHash}
+    const prompt = `You are a professional career counselor and expert writer. Create a personalized, compelling cover letter based on the provided resume and job description.
 
 Applicant Name: ${input.applicantName}
 
@@ -54,29 +43,29 @@ Write a professional cover letter that:
 - Is concise but impactful (3-4 paragraphs)
 - Uses a professional but engaging tone
 - Includes a strong opening and closing
-- Maintains consistency for identical inputs
 
 Format the cover letter as a complete, ready-to-send document with proper business letter structure.
 
-Return only the cover letter text, no additional formatting or JSON structure.
-`;
+Return only the cover letter text, no additional formatting or JSON structure.`;
 
     const response = await ai.generate({
+      model,
       prompt,
       config: {
-        temperature: 0.3, // Lower temperature for more consistency while maintaining creativity
+        temperature: 0.7,
         topP: 0.9,
         topK: 40,
         maxOutputTokens: 1024,
       },
     });
 
+    console.log('[generateCoverLetterFlow] Generation complete', {
+      responseLength: response.text.length
+    });
+
     const result = {
       coverLetter: response.text.trim(),
     };
-    
-    // Cache the result for consistency
-    coverLetterCache.set(inputKey, result);
     
     return result;
   }

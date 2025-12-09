@@ -120,9 +120,106 @@ export default function ResumeBuilderPage() {
     }));
   };
 
-  const generateResume = () => {
-    // This would generate the actual resume document
-    alert('Resume generation feature coming soon! This will create a downloadable PDF based on your selected template.');
+  const [showPreview, setShowPreview] = useState(false);
+
+  const generateResumeHTML = () => {
+    const template = templates.find(t => t.id === selectedTemplate);
+    
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${resumeData.personalInfo.name} - Resume</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; padding: 40px; max-width: 850px; margin: 0 auto; }
+    h1 { font-size: 32px; margin-bottom: 8px; color: #1a1a1a; }
+    h2 { font-size: 20px; margin-top: 24px; margin-bottom: 12px; color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 4px; }
+    h3 { font-size: 16px; margin-bottom: 4px; color: #1a1a1a; }
+    .contact-info { margin-bottom: 20px; font-size: 14px; color: #666; }
+    .contact-info a { color: #2563eb; text-decoration: none; }
+    .section { margin-bottom: 24px; }
+    .experience-item, .education-item { margin-bottom: 16px; }
+    .job-title { font-weight: bold; font-size: 16px; }
+    .company { color: #666; font-size: 14px; }
+    .duration { color: #888; font-size: 13px; font-style: italic; }
+    .description { margin-top: 8px; font-size: 14px; white-space: pre-wrap; }
+    .skills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .skill-badge { background: #e5e7eb; padding: 6px 12px; border-radius: 4px; font-size: 13px; }
+    .summary { font-size: 14px; line-height: 1.8; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <h1>${resumeData.personalInfo.name}</h1>
+  <div class="contact-info">
+    ${resumeData.personalInfo.email} | ${resumeData.personalInfo.phone} | ${resumeData.personalInfo.location}
+    ${resumeData.personalInfo.linkedin ? `| <a href="${resumeData.personalInfo.linkedin}">LinkedIn</a>` : ''}
+    ${resumeData.personalInfo.website ? `| <a href="${resumeData.personalInfo.website}">Portfolio</a>` : ''}
+  </div>
+
+  ${resumeData.summary ? `
+  <div class="section">
+    <h2>Professional Summary</h2>
+    <p class="summary">${resumeData.summary}</p>
+  </div>
+  ` : ''}
+
+  ${resumeData.experience.length > 0 ? `
+  <div class="section">
+    <h2>Work Experience</h2>
+    ${resumeData.experience.map(exp => `
+      <div class="experience-item">
+        <div class="job-title">${exp.title}</div>
+        <div class="company">${exp.company}</div>
+        <div class="duration">${exp.duration}</div>
+        <div class="description">${exp.description}</div>
+      </div>
+    `).join('')}
+  </div>
+  ` : ''}
+
+  ${resumeData.education.length > 0 ? `
+  <div class="section">
+    <h2>Education</h2>
+    ${resumeData.education.map(edu => `
+      <div class="education-item">
+        <div class="job-title">${edu.degree}</div>
+        <div class="company">${edu.school}</div>
+        <div class="duration">${edu.year}</div>
+      </div>
+    `).join('')}
+  </div>
+  ` : ''}
+
+  ${resumeData.skills.length > 0 ? `
+  <div class="section">
+    <h2>Skills</h2>
+    <div class="skills">
+      ${resumeData.skills.map(skill => `<span class="skill-badge">${skill}</span>`).join('')}
+    </div>
+  </div>
+  ` : ''}
+</body>
+</html>
+    `;
+  };
+
+  const handlePreview = () => {
+    setShowPreview(true);
+  };
+
+  const handleDownload = () => {
+    const html = generateResumeHTML();
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${resumeData.personalInfo.name.replace(/\s+/g, '_')}_Resume.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (currentStep === 0) {
@@ -376,6 +473,120 @@ export default function ResumeBuilderPage() {
                 />
               )}
 
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  {resumeData.experience.map((exp, index) => (
+                    <div key={index} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">Experience {index + 1}</h4>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setResumeData(prev => ({
+                            ...prev,
+                            experience: prev.experience.filter((_, i) => i !== index)
+                          }))}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <Input
+                        placeholder="Job Title"
+                        value={exp.title}
+                        onChange={(e) => {
+                          const newExperience = [...resumeData.experience];
+                          newExperience[index].title = e.target.value;
+                          setResumeData(prev => ({ ...prev, experience: newExperience }));
+                        }}
+                      />
+                      <Input
+                        placeholder="Company Name"
+                        value={exp.company}
+                        onChange={(e) => {
+                          const newExperience = [...resumeData.experience];
+                          newExperience[index].company = e.target.value;
+                          setResumeData(prev => ({ ...prev, experience: newExperience }));
+                        }}
+                      />
+                      <Input
+                        placeholder="Duration (e.g., Jan 2020 - Present)"
+                        value={exp.duration}
+                        onChange={(e) => {
+                          const newExperience = [...resumeData.experience];
+                          newExperience[index].duration = e.target.value;
+                          setResumeData(prev => ({ ...prev, experience: newExperience }));
+                        }}
+                      />
+                      <Textarea
+                        placeholder="Job description and key achievements..."
+                        className="min-h-[100px]"
+                        value={exp.description}
+                        onChange={(e) => {
+                          const newExperience = [...resumeData.experience];
+                          newExperience[index].description = e.target.value;
+                          setResumeData(prev => ({ ...prev, experience: newExperience }));
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={addExperience} className="w-full">
+                    + Add Experience
+                  </Button>
+                </div>
+              )}
+
+              {currentStep === 4 && (
+                <div className="space-y-6">
+                  {resumeData.education.map((edu, index) => (
+                    <div key={index} className="p-4 border rounded-lg space-y-3">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium">Education {index + 1}</h4>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setResumeData(prev => ({
+                            ...prev,
+                            education: prev.education.filter((_, i) => i !== index)
+                          }))}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <Input
+                        placeholder="Degree (e.g., Bachelor of Science in Computer Science)"
+                        value={edu.degree}
+                        onChange={(e) => {
+                          const newEducation = [...resumeData.education];
+                          newEducation[index].degree = e.target.value;
+                          setResumeData(prev => ({ ...prev, education: newEducation }));
+                        }}
+                      />
+                      <Input
+                        placeholder="School/University Name"
+                        value={edu.school}
+                        onChange={(e) => {
+                          const newEducation = [...resumeData.education];
+                          newEducation[index].school = e.target.value;
+                          setResumeData(prev => ({ ...prev, education: newEducation }));
+                        }}
+                      />
+                      <Input
+                        placeholder="Graduation Year (e.g., 2020)"
+                        value={edu.year}
+                        onChange={(e) => {
+                          const newEducation = [...resumeData.education];
+                          newEducation[index].year = e.target.value;
+                          setResumeData(prev => ({ ...prev, education: newEducation }));
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <Button variant="outline" onClick={addEducation} className="w-full">
+                    + Add Education
+                  </Button>
+                </div>
+              )}
+
               {currentStep === 5 && (
                 <div>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -398,22 +609,98 @@ export default function ResumeBuilderPage() {
               )}
 
               {currentStep === 6 && (
-                <div className="text-center py-8">
-                  <FileUser className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Resume Preview</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Your resume is ready! Preview and download your professional resume.
-                  </p>
-                  <div className="flex gap-4 justify-center">
-                    <Button variant="outline">
-                      <Eye className="mr-2 h-4 w-4" />
-                      Preview
-                    </Button>
-                    <Button onClick={generateResume}>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download PDF
-                    </Button>
-                  </div>
+                <div>
+                  {!showPreview ? (
+                    <div className="text-center py-8">
+                      <FileUser className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">Resume Preview</h3>
+                      <p className="text-muted-foreground mb-6">
+                        Your resume is ready! Preview and download your professional resume.
+                      </p>
+                      <div className="flex gap-4 justify-center">
+                        <Button variant="outline" onClick={handlePreview}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Preview
+                        </Button>
+                        <Button onClick={handleDownload}>
+                          <Download className="mr-2 h-4 w-4" />
+                          Download HTML
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="mb-4 flex justify-between items-center">
+                        <h3 className="text-lg font-semibold">Resume Preview</h3>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => setShowPreview(false)}>
+                            Close Preview
+                          </Button>
+                          <Button size="sm" onClick={handleDownload}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Download HTML
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-8 bg-white text-black max-h-[600px] overflow-y-auto">
+                        <div className="max-w-[850px] mx-auto">
+                          <h1 className="text-3xl font-bold mb-2">{resumeData.personalInfo.name}</h1>
+                          <div className="text-sm text-gray-600 mb-6">
+                            {resumeData.personalInfo.email} | {resumeData.personalInfo.phone} | {resumeData.personalInfo.location}
+                            {resumeData.personalInfo.linkedin && ` | ${resumeData.personalInfo.linkedin}`}
+                            {resumeData.personalInfo.website && ` | ${resumeData.personalInfo.website}`}
+                          </div>
+
+                          {resumeData.summary && (
+                            <div className="mb-6">
+                              <h2 className="text-xl font-semibold mb-2 text-blue-600 border-b-2 border-blue-600 pb-1">Professional Summary</h2>
+                              <p className="text-sm leading-relaxed">{resumeData.summary}</p>
+                            </div>
+                          )}
+
+                          {resumeData.experience.length > 0 && (
+                            <div className="mb-6">
+                              <h2 className="text-xl font-semibold mb-3 text-blue-600 border-b-2 border-blue-600 pb-1">Work Experience</h2>
+                              {resumeData.experience.map((exp, index) => (
+                                <div key={index} className="mb-4">
+                                  <div className="font-semibold">{exp.title}</div>
+                                  <div className="text-sm text-gray-600">{exp.company}</div>
+                                  <div className="text-xs text-gray-500 italic mb-2">{exp.duration}</div>
+                                  <div className="text-sm whitespace-pre-wrap">{exp.description}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {resumeData.education.length > 0 && (
+                            <div className="mb-6">
+                              <h2 className="text-xl font-semibold mb-3 text-blue-600 border-b-2 border-blue-600 pb-1">Education</h2>
+                              {resumeData.education.map((edu, index) => (
+                                <div key={index} className="mb-3">
+                                  <div className="font-semibold">{edu.degree}</div>
+                                  <div className="text-sm text-gray-600">{edu.school}</div>
+                                  <div className="text-xs text-gray-500">{edu.year}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {resumeData.skills.length > 0 && (
+                            <div className="mb-6">
+                              <h2 className="text-xl font-semibold mb-3 text-blue-600 border-b-2 border-blue-600 pb-1">Skills</h2>
+                              <div className="flex flex-wrap gap-2">
+                                {resumeData.skills.map((skill, index) => (
+                                  <span key={index} className="bg-gray-200 px-3 py-1 rounded text-sm">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
