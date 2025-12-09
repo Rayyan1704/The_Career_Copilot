@@ -2,6 +2,10 @@
 
 A modern, AI-powered career toolkit built with Next.js and Tailwind CSS. This application provides job seekers with a comprehensive suite of tools to analyze resumes, match them to job descriptions, generate cover letters, and prepare for interviews.
 
+## Live Link
+
+🚀 [The Career Copilot - Live Demo](https://the-career-copilot.vercel.app/)
+
 ## Features
 
 - **AI Resume Analyzer**: Get detailed feedback on your resume with ATS scoring and improvement suggestions
