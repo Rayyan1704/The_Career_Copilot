@@ -39,3 +39,34 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS files
+Thumbs.db
+.project
+.classpath
+.c9/
+
+# Test files
+test-*.js
+*.test.js
+*.spec.js
+
+# Logs and databases
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+**/node_modules
+**/.env.local.*.bak
+
